@@ -1,0 +1,749 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BiteRush</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0D0D0D;--bg2:#141414;--bg3:#1C1C1C;--bg4:#252525;
+    --accent:#FF6B35;--accent2:#FF9A6C;--green:#2ECC71;
+    --text:#F0EDE8;--text2:#9E9B95;--text3:#5A5855;
+    --border:#2A2A2A;--card:#1A1A1A;
+    --r8:8px;--r12:12px;--r16:16px;--r24:24px;
+  }
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+  
+  /* SCREENS */
+  .screen{display:none;min-height:100vh;flex-direction:column;animation:fadeIn 0.3s ease}
+  .screen.active{display:flex}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  /* TOP NAV */
+  .topbar{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg);z-index:100;border-bottom:1px solid var(--border)}
+  .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;color:var(--accent);letter-spacing:-0.5px}
+  .logo span{color:var(--text)}
+  .icon-btn{width:38px;height:38px;border-radius:var(--r8);background:var(--bg3);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text);font-size:18px;transition:background 0.2s}
+  .icon-btn:hover{background:var(--bg4)}
+  .notif-dot{position:relative}
+  .notif-dot::after{content:'';position:absolute;top:4px;right:4px;width:8px;height:8px;background:var(--accent);border-radius:50%;border:2px solid var(--bg)}
+
+  /* BOTTOM NAV */
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);display:flex;z-index:100;padding:8px 0 20px}
+  .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:6px 0;color:var(--text3);font-size:11px;font-weight:500;transition:color 0.2s}
+  .nav-item.active{color:var(--accent)}
+  .nav-icon{font-size:22px;line-height:1}
+  .nav-item.active .nav-icon{transform:scale(1.1)}
+
+  /* CONTENT */
+  .content{flex:1;overflow-y:auto;padding:0 0 90px}
+  
+  /* HERO / SEARCH */
+  .hero{padding:20px;background:linear-gradient(180deg,#1A1200 0%,var(--bg) 100%)}
+  .location-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;color:var(--text2);font-size:13px}
+  .location-name{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:16px}
+  .location-name span{color:var(--accent)}
+  .search-bar{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r12);padding:12px 16px;cursor:text}
+  .search-bar input{background:none;border:none;outline:none;color:var(--text);font-size:14px;flex:1;font-family:'DM Sans',sans-serif}
+  .search-bar input::placeholder{color:var(--text3)}
+  .filter-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--r8);padding:6px 12px;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif}
+
+  /* CATEGORIES */
+  .section-header{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 12px;font-family:'Syne',sans-serif}
+  .section-title{font-weight:700;font-size:17px}
+  .see-all{color:var(--accent);font-size:13px;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif}
+  .categories-scroll{display:flex;gap:10px;padding:0 20px 4px;overflow-x:auto;scrollbar-width:none}
+  .categories-scroll::-webkit-scrollbar{display:none}
+  .cat-pill{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:100px;background:var(--bg3);border:1px solid var(--border);white-space:nowrap;cursor:pointer;font-size:13px;font-weight:500;transition:all 0.2s;color:var(--text2)}
+  .cat-pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
+  .cat-pill span{font-size:16px}
+
+  /* RESTAURANT CARDS */
+  .cards-scroll{display:flex;gap:14px;padding:0 20px 4px;overflow-x:auto;scrollbar-width:none}
+  .cards-scroll::-webkit-scrollbar{display:none}
+  .rest-card{min-width:240px;border-radius:var(--r16);background:var(--card);border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:transform 0.2s,border-color 0.2s}
+  .rest-card:hover{transform:translateY(-2px);border-color:var(--accent)}
+  .rest-card-img{height:130px;position:relative;overflow:hidden}
+  .rest-card-img-bg{width:100%;height:100%;object-fit:cover;display:flex;align-items:center;justify-content:center;font-size:48px}
+  .rest-badge{position:absolute;top:8px;left:8px;background:var(--accent);color:#fff;font-size:11px;font-weight:600;padding:3px 8px;border-radius:100px;font-family:'Syne',sans-serif}
+  .rest-fav{position:absolute;top:8px;right:8px;width:30px;height:30px;background:rgba(0,0,0,0.6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;border:none}
+  .rest-info{padding:12px}
+  .rest-name{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px}
+  .rest-meta{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2)}
+  .rest-meta span{display:flex;align-items:center;gap:3px}
+  .star{color:#FFB800}
+  .dot{color:var(--text3)}
+
+  /* VERTICAL CARDS (restaurant list) */
+  .v-card{display:flex;gap:12px;padding:12px 20px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.2s}
+  .v-card:hover{background:var(--bg2)}
+  .v-card-img{width:72px;height:72px;border-radius:var(--r12);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0}
+  .v-card-body{flex:1}
+  .v-card-name{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:2px}
+  .v-card-cuisine{font-size:13px;color:var(--text2);margin-bottom:6px}
+  .v-card-meta{display:flex;gap:10px;font-size:12px;color:var(--text2)}
+  .badge-open{color:var(--green);font-weight:500}
+
+  /* MENU SCREEN */
+  .menu-hero{height:220px;background:var(--bg3);position:relative;display:flex;align-items:center;justify-content:center;font-size:80px}
+  .menu-hero-overlay{position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(to top,var(--bg),transparent)}
+  .menu-info{padding:16px 20px}
+  .menu-restaurant-name{font-family:'Syne',sans-serif;font-weight:800;font-size:26px;margin-bottom:6px}
+  .menu-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .menu-tag{background:var(--bg3);color:var(--text2);padding:4px 10px;border-radius:100px;font-size:12px}
+  .menu-stats{display:flex;gap:16px;font-size:13px;color:var(--text2);padding:12px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .menu-stat{display:flex;flex-direction:column;align-items:center;gap:2px}
+  .menu-stat-val{font-weight:600;color:var(--text);font-family:'Syne',sans-serif;font-size:15px}
+
+  /* MENU ITEMS */
+  .menu-section-title{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;padding:16px 20px 8px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;font-size:12px}
+  .menu-item{display:flex;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);transition:background 0.2s}
+  .menu-item:hover{background:var(--bg2)}
+  .menu-item-img{width:80px;height:80px;border-radius:var(--r12);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0}
+  .menu-item-body{flex:1}
+  .menu-item-name{font-family:'Syne',sans-serif;font-weight:600;font-size:15px;margin-bottom:3px}
+  .menu-item-desc{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:8px}
+  .menu-item-footer{display:flex;align-items:center;justify-content:space-between}
+  .item-price{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--accent)}
+  .add-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--r8);padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Syne',sans-serif;transition:transform 0.1s,background 0.2s}
+  .add-btn:hover{background:#e55a25}
+  .add-btn:active{transform:scale(0.95)}
+  .qty-ctrl{display:flex;align-items:center;gap:8px}
+  .qty-btn{width:28px;height:28px;border-radius:var(--r8);background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:500;transition:background 0.15s}
+  .qty-btn:hover{background:var(--accent);border-color:var(--accent)}
+  .qty-num{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;min-width:20px;text-align:center}
+
+  /* CART SCREEN */
+  .cart-item{display:flex;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);align-items:center}
+  .cart-item-img{width:54px;height:54px;border-radius:var(--r8);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+  .cart-item-name{font-family:'Syne',sans-serif;font-weight:600;font-size:14px;margin-bottom:3px}
+  .cart-item-price{font-size:13px;color:var(--accent);font-weight:500}
+  .cart-summary{padding:20px;border-top:1px solid var(--border)}
+  .summary-row{display:flex;justify-content:space-between;font-size:14px;color:var(--text2);margin-bottom:10px}
+  .summary-row.total{color:var(--text);font-weight:700;font-size:16px;font-family:'Syne',sans-serif;padding-top:10px;border-top:1px solid var(--border)}
+  .checkout-btn{display:block;width:calc(100% - 40px);margin:0 20px 20px;background:var(--accent);color:#fff;border:none;border-radius:var(--r16);padding:16px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;transition:transform 0.2s,background 0.2s}
+  .checkout-btn:hover{background:#e55a25;transform:scale(1.01)}
+  .checkout-btn:active{transform:scale(0.98)}
+
+  /* ORDER TRACKING */
+  .track-hero{padding:24px 20px;background:linear-gradient(135deg,#2A1200,#1A0A00)}
+  .track-status{font-family:'Syne',sans-serif;font-weight:800;font-size:24px;margin-bottom:4px}
+  .track-eta{color:var(--text2);font-size:14px}
+  .track-steps{padding:24px 20px}
+  .track-step{display:flex;gap:16px;margin-bottom:24px;position:relative}
+  .track-step::before{content:'';position:absolute;left:16px;top:34px;width:2px;height:calc(100% + 4px);background:var(--border)}
+  .track-step:last-child::before{display:none}
+  .step-icon{width:34px;height:34px;border-radius:50%;background:var(--bg3);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;z-index:1}
+  .track-step.done .step-icon{background:var(--accent);border-color:var(--accent)}
+  .track-step.active .step-icon{background:var(--bg3);border-color:var(--accent);box-shadow:0 0 12px rgba(255,107,53,0.4)}
+  .step-text{font-family:'Syne',sans-serif;font-weight:600;font-size:14px;margin-bottom:2px}
+  .step-sub{font-size:12px;color:var(--text2)}
+  .map-placeholder{margin:0 20px;border-radius:var(--r16);background:var(--bg3);border:1px solid var(--border);height:160px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text3);flex-direction:column;gap:8px;overflow:hidden;position:relative}
+  .map-grid{position:absolute;inset:0;opacity:0.08;background-image:linear-gradient(var(--text) 1px,transparent 1px),linear-gradient(90deg,var(--text) 1px,transparent 1px);background-size:30px 30px}
+  .map-pin{font-size:32px;z-index:1}
+  .map-label{font-size:12px;color:var(--text2);z-index:1}
+  .rider-row{display:flex;align-items:center;gap:12px;padding:16px 20px;margin:16px 20px;background:var(--bg3);border-radius:var(--r16);border:1px solid var(--border)}
+  .rider-avatar{width:46px;height:46px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:22px}
+  .rider-name{font-family:'Syne',sans-serif;font-weight:600;font-size:14px}
+  .rider-sub{font-size:12px;color:var(--text2)}
+  .call-btn{margin-left:auto;background:var(--green);color:#fff;border:none;border-radius:var(--r8);padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Syne',sans-serif}
+
+  /* PROFILE */
+  .profile-header{padding:32px 20px 20px;text-align:center;border-bottom:1px solid var(--border)}
+  .profile-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#FF6B35,#FF9A6C);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 12px;font-family:'Syne',sans-serif;font-weight:800;color:#fff}
+  .profile-name{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;margin-bottom:4px}
+  .profile-email{font-size:13px;color:var(--text2)}
+  .profile-menu{padding:8px 0}
+  .profile-item{display:flex;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.2s}
+  .profile-item:hover{background:var(--bg2)}
+  .profile-item-icon{width:36px;height:36px;border-radius:var(--r8);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:18px}
+  .profile-item-text{flex:1;font-size:14px;font-weight:500}
+  .profile-item-arrow{color:var(--text3);font-size:18px}
+
+  /* PROMO BANNER */
+  .promo{margin:16px 20px;border-radius:var(--r16);background:linear-gradient(135deg,#2A1500,#1A0D00);border:1px solid #3A2000;padding:16px;display:flex;align-items:center;gap:12px}
+  .promo-emoji{font-size:36px}
+  .promo-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:2px}
+  .promo-desc{font-size:12px;color:var(--text2)}
+  .promo-badge{margin-left:auto;background:var(--accent);color:#fff;padding:6px 12px;border-radius:var(--r8);font-size:12px;font-weight:700;font-family:'Syne',sans-serif;white-space:nowrap}
+
+  /* EMPTY */
+  .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center;gap:12px}
+  .empty-emoji{font-size:64px}
+  .empty-title{font-family:'Syne',sans-serif;font-weight:700;font-size:18px}
+  .empty-sub{color:var(--text2);font-size:14px;max-width:260px;line-height:1.6}
+  .empty-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--r12);padding:12px 28px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Syne',sans-serif;margin-top:8px}
+
+  /* FLOAT CART BTN */
+  .float-cart{position:fixed;bottom:86px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;border:none;border-radius:100px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(255,107,53,0.4);transition:transform 0.2s,box-shadow 0.2s;white-space:nowrap;z-index:99}
+  .float-cart:hover{transform:translateX(-50%) scale(1.04);box-shadow:0 12px 32px rgba(255,107,53,0.5)}
+  .float-cart-badge{background:#fff;color:var(--accent);border-radius:100px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+  .hidden{display:none!important}
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar{width:4px;height:4px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px}
+</style>
+</head>
+<body>
+
+<!-- HOME SCREEN -->
+<div class="screen active" id="screen-home">
+  <div class="topbar">
+    <div>
+      <div class="location-row">📍 Delivering to</div>
+      <div class="location-name">Patna, <span>Bihar</span> ▾</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="icon-btn notif-dot">🔔</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="hero">
+      <div class="search-bar">
+        <span style="font-size:18px;color:var(--text3)">🔍</span>
+        <input type="text" placeholder="Search restaurants, cuisines...">
+        <button class="filter-btn">Filter</button>
+      </div>
+    </div>
+    
+    <div class="promo">
+      <div class="promo-emoji">🎉</div>
+      <div>
+        <div class="promo-title">50% off your first order</div>
+        <div class="promo-desc">Use code NEWBITE at checkout</div>
+      </div>
+      <div class="promo-badge">NEWBITE</div>
+    </div>
+
+    <div class="section-header">
+      <div class="section-title">Categories</div>
+    </div>
+    <div class="categories-scroll">
+      <div class="cat-pill active" onclick="filterCategory(this,'all')"><span>🍽️</span>All</div>
+      <div class="cat-pill" onclick="filterCategory(this,'pizza')"><span>🍕</span>Pizza</div>
+      <div class="cat-pill" onclick="filterCategory(this,'burger')"><span>🍔</span>Burgers</div>
+      <div class="cat-pill" onclick="filterCategory(this,'indian')"><span>🍛</span>Indian</div>
+      <div class="cat-pill" onclick="filterCategory(this,'sushi')"><span>🍱</span>Sushi</div>
+      <div class="cat-pill" onclick="filterCategory(this,'dessert')"><span>🍰</span>Desserts</div>
+      <div class="cat-pill" onclick="filterCategory(this,'drinks')"><span>🧃</span>Drinks</div>
+    </div>
+
+    <div class="section-header" style="margin-top:8px">
+      <div class="section-title">Featured</div>
+      <button class="see-all">See all</button>
+    </div>
+    <div class="cards-scroll">
+      <div class="rest-card" onclick="openMenu('La Fiesta Pizza','🍕',['pizza'])">
+        <div class="rest-card-img" style="background:#1A0A00">
+          <div class="rest-card-img-bg">🍕</div>
+          <div class="rest-badge">HOT</div>
+          <button class="rest-fav">♡</button>
+        </div>
+        <div class="rest-info">
+          <div class="rest-name">La Fiesta Pizza</div>
+          <div class="rest-meta">
+            <span><span class="star">★</span> 4.8</span>
+            <span class="dot">•</span>
+            <span>25 min</span>
+            <span class="dot">•</span>
+            <span>₹30 delivery</span>
+          </div>
+        </div>
+      </div>
+      <div class="rest-card" onclick="openMenu('Curry Kingdom','🍛',['indian'])">
+        <div class="rest-card-img" style="background:#0A1A00">
+          <div class="rest-card-img-bg">🍛</div>
+          <div class="rest-badge">TOP</div>
+          <button class="rest-fav">♡</button>
+        </div>
+        <div class="rest-info">
+          <div class="rest-name">Curry Kingdom</div>
+          <div class="rest-meta">
+            <span><span class="star">★</span> 4.9</span>
+            <span class="dot">•</span>
+            <span>30 min</span>
+            <span class="dot">•</span>
+            <span>Free</span>
+          </div>
+        </div>
+      </div>
+      <div class="rest-card" onclick="openMenu('Burger Bros','🍔',['burger'])">
+        <div class="rest-card-img" style="background:#001A10">
+          <div class="rest-card-img-bg">🍔</div>
+          <button class="rest-fav">♡</button>
+        </div>
+        <div class="rest-info">
+          <div class="rest-name">Burger Bros</div>
+          <div class="rest-meta">
+            <span><span class="star">★</span> 4.6</span>
+            <span class="dot">•</span>
+            <span>20 min</span>
+            <span class="dot">•</span>
+            <span>₹20 delivery</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-header" style="margin-top:8px">
+      <div class="section-title">All Restaurants</div>
+      <button class="see-all">Sort ↕</button>
+    </div>
+    <div id="restaurant-list">
+      <div class="v-card" onclick="openMenu('Sushi Zen','🍱',['sushi'])">
+        <div class="v-card-img">🍱</div>
+        <div class="v-card-body">
+          <div class="v-card-name">Sushi Zen</div>
+          <div class="v-card-cuisine">Japanese · Sushi · Asian</div>
+          <div class="v-card-meta">
+            <span><span class="star">★</span> 4.7</span>
+            <span>35 min</span>
+            <span class="badge-open">● Open</span>
+          </div>
+        </div>
+      </div>
+      <div class="v-card" onclick="openMenu('Sweet Cravings','🍰',['dessert'])">
+        <div class="v-card-img">🍰</div>
+        <div class="v-card-body">
+          <div class="v-card-name">Sweet Cravings</div>
+          <div class="v-card-cuisine">Desserts · Bakery · Cakes</div>
+          <div class="v-card-meta">
+            <span><span class="star">★</span> 4.5</span>
+            <span>15 min</span>
+            <span class="badge-open">● Open</span>
+          </div>
+        </div>
+      </div>
+      <div class="v-card" onclick="openMenu('Desi Tadka','🍛',['indian'])">
+        <div class="v-card-img">🍲</div>
+        <div class="v-card-body">
+          <div class="v-card-name">Desi Tadka</div>
+          <div class="v-card-cuisine">Indian · Biryani · Mughlai</div>
+          <div class="v-card-meta">
+            <span><span class="star">★</span> 4.8</span>
+            <span>40 min</span>
+            <span class="badge-open">● Open</span>
+          </div>
+        </div>
+      </div>
+      <div class="v-card" onclick="openMenu('Thirsty Drops','🧃',['drinks'])">
+        <div class="v-card-img">🧃</div>
+        <div class="v-card-body">
+          <div class="v-card-name">Thirsty Drops</div>
+          <div class="v-card-cuisine">Juices · Smoothies · Shakes</div>
+          <div class="v-card-meta">
+            <span><span class="star">★</span> 4.4</span>
+            <span>10 min</span>
+            <span class="badge-open">● Open</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="showScreen('home')"><div class="nav-icon">🏠</div><span>Home</span></div>
+    <div class="nav-item" onclick="showScreen('search')"><div class="nav-icon">🔍</div><span>Search</span></div>
+    <div class="nav-item" onclick="showScreen('orders')"><div class="nav-icon">📦</div><span>Orders</span></div>
+    <div class="nav-item" onclick="showScreen('profile')"><div class="nav-icon">👤</div><span>Profile</span></div>
+  </div>
+</div>
+
+<!-- MENU SCREEN -->
+<div class="screen" id="screen-menu">
+  <div class="topbar">
+    <button class="icon-btn" onclick="showScreen('home')">←</button>
+    <div id="menu-topbar-name" style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px"></div>
+    <button class="icon-btn">♡</button>
+  </div>
+  <div class="content">
+    <div class="menu-hero" id="menu-hero-emoji" style="font-size:80px;display:flex;align-items:center;justify-content:center;height:180px;background:var(--bg3)">🍕</div>
+    <div class="menu-info">
+      <div class="menu-restaurant-name" id="menu-rest-name">La Fiesta Pizza</div>
+      <div class="menu-tags">
+        <span class="menu-tag">Italian</span>
+        <span class="menu-tag">Pizza</span>
+        <span class="menu-tag">Fast Food</span>
+      </div>
+      <div class="menu-stats">
+        <div class="menu-stat"><div class="menu-stat-val">4.8 ★</div><div style="font-size:11px;color:var(--text3)">Rating</div></div>
+        <div class="menu-stat"><div class="menu-stat-val">25 min</div><div style="font-size:11px;color:var(--text3)">Delivery</div></div>
+        <div class="menu-stat"><div class="menu-stat-val">₹30</div><div style="font-size:11px;color:var(--text3)">Fee</div></div>
+        <div class="menu-stat"><div class="menu-stat-val">1.2 km</div><div style="font-size:11px;color:var(--text3)">Distance</div></div>
+      </div>
+    </div>
+    <div class="menu-section-title">Popular</div>
+    <div id="menu-items-container"></div>
+  </div>
+  <div id="float-cart-btn" class="float-cart hidden" onclick="showScreen('cart')">
+    🛒 View Cart · ₹<span id="float-cart-price">0</span>
+    <div class="float-cart-badge" id="float-cart-count">0</div>
+  </div>
+</div>
+
+<!-- CART SCREEN -->
+<div class="screen" id="screen-cart">
+  <div class="topbar">
+    <button class="icon-btn" onclick="history.back();showScreen('menu')">←</button>
+    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px">Your Cart</div>
+    <div style="width:38px"></div>
+  </div>
+  <div class="content">
+    <div id="cart-items-container"></div>
+    <div class="cart-summary">
+      <div class="summary-row"><span>Subtotal</span><span id="cart-subtotal">₹0</span></div>
+      <div class="summary-row"><span>Delivery Fee</span><span>₹30</span></div>
+      <div class="summary-row"><span>Taxes (5%)</span><span id="cart-tax">₹0</span></div>
+      <div class="summary-row total"><span>Total</span><span id="cart-total">₹0</span></div>
+    </div>
+    <div style="padding:0 20px 12px">
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r12);padding:12px 16px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:18px">🏷️</span>
+        <input type="text" placeholder="Enter promo code" value="NEWBITE" style="background:none;border:none;outline:none;color:var(--text);font-size:14px;flex:1;font-family:'DM Sans',sans-serif">
+        <button style="background:none;border:none;color:var(--accent);font-size:13px;font-weight:600;cursor:pointer;font-family:'Syne',sans-serif">Apply</button>
+      </div>
+    </div>
+    <button class="checkout-btn" onclick="placeOrder()">Place Order →</button>
+  </div>
+</div>
+
+<!-- ORDERS / TRACKING SCREEN -->
+<div class="screen" id="screen-orders">
+  <div class="topbar">
+    <div class="logo">Bite<span>Rush</span></div>
+    <button class="icon-btn">🔔</button>
+  </div>
+  <div class="content" id="orders-content">
+    <div class="section-header"><div class="section-title">Active Order</div></div>
+    <div id="tracking-section">
+      <div class="track-hero">
+        <div class="track-status" id="track-status-text">Order Confirmed</div>
+        <div class="track-eta" id="track-eta">Estimated arrival: <strong>25–35 min</strong></div>
+      </div>
+      <div class="map-placeholder" style="margin-top:16px">
+        <div class="map-grid"></div>
+        <div class="map-pin">📍</div>
+        <div class="map-label">Rider is heading your way</div>
+      </div>
+      <div class="rider-row">
+        <div class="rider-avatar">🏍️</div>
+        <div>
+          <div class="rider-name">Rahul K.</div>
+          <div class="rider-sub">Your delivery rider</div>
+        </div>
+        <button class="call-btn">📞 Call</button>
+      </div>
+      <div class="track-steps">
+        <div class="track-step done" id="step1">
+          <div class="step-icon">✓</div>
+          <div><div class="step-text">Order Placed</div><div class="step-sub">Your order has been received</div></div>
+        </div>
+        <div class="track-step done" id="step2">
+          <div class="step-icon">✓</div>
+          <div><div class="step-text">Preparing Food</div><div class="step-sub">Kitchen is preparing your meal</div></div>
+        </div>
+        <div class="track-step active" id="step3">
+          <div class="step-icon">🏍️</div>
+          <div><div class="step-text">Out for Delivery</div><div class="step-sub">Rider picked up your order</div></div>
+        </div>
+        <div class="track-step" id="step4">
+          <div class="step-icon">🏠</div>
+          <div><div class="step-text">Delivered</div><div class="step-sub">Enjoy your meal!</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="section-header" style="margin-top:4px"><div class="section-title">Past Orders</div></div>
+    <div class="v-card">
+      <div class="v-card-img" style="background:#1A0A00">🍕</div>
+      <div class="v-card-body">
+        <div class="v-card-name">La Fiesta Pizza</div>
+        <div class="v-card-cuisine">Margherita · Pepperoni</div>
+        <div class="v-card-meta"><span>2 days ago</span><span style="color:var(--green)">Delivered ✓</span></div>
+      </div>
+    </div>
+    <div class="v-card">
+      <div class="v-card-img">🍛</div>
+      <div class="v-card-body">
+        <div class="v-card-name">Curry Kingdom</div>
+        <div class="v-card-cuisine">Butter Chicken · Naan</div>
+        <div class="v-card-meta"><span>5 days ago</span><span style="color:var(--green)">Delivered ✓</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="showScreen('home')"><div class="nav-icon">🏠</div><span>Home</span></div>
+    <div class="nav-item" onclick="showScreen('search')"><div class="nav-icon">🔍</div><span>Search</span></div>
+    <div class="nav-item active" onclick="showScreen('orders')"><div class="nav-icon">📦</div><span>Orders</span></div>
+    <div class="nav-item" onclick="showScreen('profile')"><div class="nav-icon">👤</div><span>Profile</span></div>
+  </div>
+</div>
+
+<!-- SEARCH SCREEN -->
+<div class="screen" id="screen-search">
+  <div class="topbar">
+    <div class="logo">Bite<span>Rush</span></div>
+  </div>
+  <div class="content">
+    <div style="padding:16px 20px">
+      <div class="search-bar" style="margin-bottom:20px">
+        <span style="font-size:18px;color:var(--text3)">🔍</span>
+        <input type="text" placeholder="Search restaurants, dishes..." id="search-input" oninput="doSearch(this.value)">
+      </div>
+      <div class="section-header" style="padding:0 0 12px"><div class="section-title">Trending 🔥</div></div>
+      <div id="search-results">
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <div class="cat-pill" onclick="document.getElementById('search-input').value='Biryani';doSearch('Biryani')"><span>🍛</span>Biryani</div>
+          <div class="cat-pill" onclick="document.getElementById('search-input').value='Pizza';doSearch('Pizza')"><span>🍕</span>Pizza</div>
+          <div class="cat-pill" onclick="document.getElementById('search-input').value='Burger';doSearch('Burger')"><span>🍔</span>Burger</div>
+          <div class="cat-pill" onclick="document.getElementById('search-input').value='Sushi';doSearch('Sushi')"><span>🍱</span>Sushi</div>
+          <div class="cat-pill" onclick="document.getElementById('search-input').value='Dessert';doSearch('Dessert')"><span>🍰</span>Desserts</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="showScreen('home')"><div class="nav-icon">🏠</div><span>Home</span></div>
+    <div class="nav-item active" onclick="showScreen('search')"><div class="nav-icon">🔍</div><span>Search</span></div>
+    <div class="nav-item" onclick="showScreen('orders')"><div class="nav-icon">📦</div><span>Orders</span></div>
+    <div class="nav-item" onclick="showScreen('profile')"><div class="nav-icon">👤</div><span>Profile</span></div>
+  </div>
+</div>
+
+<!-- PROFILE SCREEN -->
+<div class="screen" id="screen-profile">
+  <div class="topbar">
+    <div class="logo">Bite<span>Rush</span></div>
+    <button class="icon-btn">⚙️</button>
+  </div>
+  <div class="content">
+    <div class="profile-header">
+      <div class="profile-avatar">RK</div>
+      <div class="profile-name">Rohit Kumar</div>
+      <div class="profile-email">rohit.kumar@email.com</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:20px">
+      <div style="background:var(--bg3);border-radius:var(--r12);padding:14px;text-align:center">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:22px;color:var(--accent)">24</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px">Orders</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:var(--r12);padding:14px;text-align:center">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:22px;color:var(--accent)">4.9</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px">Rating</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:var(--r12);padding:14px;text-align:center">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:22px;color:var(--accent)">₹480</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px">Saved</div>
+      </div>
+    </div>
+    <div class="profile-menu">
+      <div class="profile-item"><div class="profile-item-icon">🏠</div><div class="profile-item-text">Saved Addresses</div><div class="profile-item-arrow">›</div></div>
+      <div class="profile-item"><div class="profile-item-icon">💳</div><div class="profile-item-text">Payment Methods</div><div class="profile-item-arrow">›</div></div>
+      <div class="profile-item"><div class="profile-item-icon">❤️</div><div class="profile-item-text">Favourites</div><div class="profile-item-arrow">›</div></div>
+      <div class="profile-item"><div class="profile-item-icon">🎁</div><div class="profile-item-text">Refer & Earn</div><div class="profile-item-arrow">›</div></div>
+      <div class="profile-item"><div class="profile-item-icon">⚙️</div><div class="profile-item-text">Settings</div><div class="profile-item-arrow">›</div></div>
+      <div class="profile-item" style="color:#E24B4A"><div class="profile-item-icon" style="background:#1A0000">🚪</div><div class="profile-item-text" style="color:#E24B4A">Log Out</div></div>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="showScreen('home')"><div class="nav-icon">🏠</div><span>Home</span></div>
+    <div class="nav-item" onclick="showScreen('search')"><div class="nav-icon">🔍</div><span>Search</span></div>
+    <div class="nav-item" onclick="showScreen('orders')"><div class="nav-icon">📦</div><span>Orders</span></div>
+    <div class="nav-item active" onclick="showScreen('profile')"><div class="nav-icon">👤</div><span>Profile</span></div>
+  </div>
+</div>
+
+<script>
+const menuData = {
+  pizza: [
+    {name:'Margherita Classic',desc:'San Marzano tomato, buffalo mozzarella, fresh basil',price:249,emoji:'🍕'},
+    {name:'Pepperoni Feast',desc:'Double pepperoni, mozzarella, oregano, tomato sauce',price:329,emoji:'🍕'},
+    {name:'BBQ Chicken Pizza',desc:'Smoked chicken, BBQ sauce, onion, bell peppers',price:299,emoji:'🍕'},
+    {name:'Four Cheese',desc:'Mozzarella, cheddar, parmesan, gorgonzola blend',price:349,emoji:'🫓'},
+  ],
+  indian: [
+    {name:'Butter Chicken',desc:'Tender chicken in rich tomato-butter sauce, best with naan',price:289,emoji:'🍛'},
+    {name:'Dal Makhani',desc:'Slow-cooked black lentils, butter, cream',price:199,emoji:'🥣'},
+    {name:'Chicken Biryani',desc:'Basmati rice, aromatic spices, saffron, raita',price:259,emoji:'🍚'},
+    {name:'Paneer Tikka',desc:'Grilled cottage cheese, capsicum, onions, mint chutney',price:219,emoji:'🥗'},
+  ],
+  burger: [
+    {name:'Classic Smash Burger',desc:'Double smash patty, american cheese, pickles, special sauce',price:199,emoji:'🍔'},
+    {name:'Crispy Chicken Burger',desc:'Buttermilk fried chicken, coleslaw, sriracha mayo',price:179,emoji:'🍔'},
+    {name:'Veg BBQ Burger',desc:'Aloo tikki, barbecue sauce, lettuce, tomato',price:149,emoji:'🫓'},
+    {name:'Loaded Fries',desc:'Crinkle fries, cheese sauce, jalapeños, herbs',price:129,emoji:'🍟'},
+  ],
+  sushi: [
+    {name:'Salmon Nigiri (x6)',desc:'Fresh Atlantic salmon over hand-pressed sushi rice',price:399,emoji:'🍣'},
+    {name:'Dragon Roll',desc:'Shrimp tempura, avocado, cucumber, eel sauce',price:449,emoji:'🍱'},
+    {name:'Spicy Tuna Roll',desc:'Yellowfin tuna, spicy mayo, cucumber, sesame',price:379,emoji:'🍣'},
+    {name:'Edamame',desc:'Steamed salted soybeans, sea salt flakes',price:149,emoji:'🥦'},
+  ],
+  dessert: [
+    {name:'Chocolate Lava Cake',desc:'Warm cake with molten dark chocolate center',price:179,emoji:'🍫'},
+    {name:'Mango Cheesecake',desc:'New York style with Alphonso mango compote',price:219,emoji:'🍰'},
+    {name:'Gulab Jamun (x6)',desc:'Soft milk dumplings soaked in rose sugar syrup',price:129,emoji:'🍮'},
+    {name:'Kulfi Falooda',desc:'Pistachio kulfi, rose syrup, basil seeds, vermicelli',price:159,emoji:'🍨'},
+  ],
+  drinks: [
+    {name:'Mango Lassi',desc:'Chilled thick yogurt shake with Alphonso mangoes',price:99,emoji:'🥭'},
+    {name:'Fresh Lime Soda',desc:'Sweet, salty or mixed — your choice',price:79,emoji:'🍋'},
+    {name:'Masala Chai',desc:'Ginger, cardamom, cinnamon brewed with full-cream milk',price:59,emoji:'☕'},
+    {name:'Cold Brew Coffee',desc:'24-hr cold extracted concentrate over ice',price:149,emoji:'☕'},
+  ],
+};
+
+let cart = {};
+let currentMenu = [];
+let currentScreen = 'home';
+let prevScreen = 'home';
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navItems = document.querySelectorAll('#screen-' + name + ' .nav-item');
+  prevScreen = currentScreen;
+  currentScreen = name;
+  if (name === 'cart') renderCart();
+  updateFloatCart();
+}
+
+function openMenu(name, emoji, categories) {
+  const menuType = categories[0];
+  currentMenu = menuData[menuType] || menuData.pizza;
+  document.getElementById('menu-topbar-name').textContent = name;
+  document.getElementById('menu-rest-name').textContent = name;
+  document.getElementById('menu-hero-emoji').textContent = emoji;
+  
+  const container = document.getElementById('menu-items-container');
+  container.innerHTML = '';
+  currentMenu.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'menu-item';
+    div.id = 'menu-item-' + i;
+    div.innerHTML = `
+      <div class="menu-item-img">${item.emoji}</div>
+      <div class="menu-item-body">
+        <div class="menu-item-name">${item.name}</div>
+        <div class="menu-item-desc">${item.desc}</div>
+        <div class="menu-item-footer">
+          <div class="item-price">₹${item.price}</div>
+          <div id="ctrl-${i}"><button class="add-btn" onclick="addToCart(${i})">+ Add</button></div>
+        </div>
+      </div>`;
+    container.appendChild(div);
+  });
+  showScreen('menu');
+  updateFloatCart();
+}
+
+function addToCart(i) {
+  const item = currentMenu[i];
+  const key = item.name;
+  if (!cart[key]) cart[key] = { ...item, qty: 0 };
+  cart[key].qty++;
+  renderItemControl(i);
+  updateFloatCart();
+}
+
+function changeQty(i, delta) {
+  const item = currentMenu[i];
+  const key = item.name;
+  if (!cart[key]) return;
+  cart[key].qty += delta;
+  if (cart[key].qty <= 0) delete cart[key];
+  renderItemControl(i);
+  updateFloatCart();
+}
+
+function renderItemControl(i) {
+  const item = currentMenu[i];
+  const key = item.name;
+  const qty = cart[key] ? cart[key].qty : 0;
+  const ctrl = document.getElementById('ctrl-' + i);
+  if (!ctrl) return;
+  if (qty === 0) {
+    ctrl.innerHTML = `<button class="add-btn" onclick="addToCart(${i})">+ Add</button>`;
+  } else {
+    ctrl.innerHTML = `<div class="qty-ctrl"><button class="qty-btn" onclick="changeQty(${i},-1)">−</button><span class="qty-num">${qty}</span><button class="qty-btn" onclick="changeQty(${i},1)">+</button></div>`;
+  }
+}
+
+function updateFloatCart() {
+  const btn = document.getElementById('float-cart-btn');
+  const totalItems = Object.values(cart).reduce((a, b) => a + b.qty, 0);
+  const totalPrice = Object.values(cart).reduce((a, b) => a + b.qty * b.price, 0);
+  if (currentScreen === 'menu' && totalItems > 0) {
+    btn.classList.remove('hidden');
+    document.getElementById('float-cart-price').textContent = totalPrice;
+    document.getElementById('float-cart-count').textContent = totalItems;
+  } else {
+    btn.classList.add('hidden');
+  }
+}
+
+function renderCart() {
+  const container = document.getElementById('cart-items-container');
+  container.innerHTML = '';
+  const items = Object.values(cart);
+  if (items.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-emoji">🛒</div><div class="empty-title">Your cart is empty</div><div class="empty-sub">Add delicious items from a restaurant to get started</div><button class="empty-btn" onclick="showScreen('home')">Browse Restaurants</button></div>`;
+    return;
+  }
+  items.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'cart-item';
+    div.innerHTML = `
+      <div class="cart-item-img">${item.emoji}</div>
+      <div style="flex:1"><div class="cart-item-name">${item.name}</div><div class="cart-item-price">₹${item.price} × ${item.qty}</div></div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text)">₹${item.price * item.qty}</div>`;
+    container.appendChild(div);
+  });
+  const subtotal = items.reduce((a, b) => a + b.qty * b.price, 0);
+  const tax = Math.round(subtotal * 0.05);
+  document.getElementById('cart-subtotal').textContent = '₹' + subtotal;
+  document.getElementById('cart-tax').textContent = '₹' + tax;
+  document.getElementById('cart-total').textContent = '₹' + (subtotal + 30 + tax);
+}
+
+function placeOrder() {
+  cart = {};
+  showScreen('orders');
+}
+
+function filterCategory(el, cat) {
+  document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  const list = document.getElementById('restaurant-list');
+  const cards = list.querySelectorAll('.v-card');
+  cards.forEach(c => c.style.display = (cat === 'all') ? '' : 'flex');
+}
+
+function doSearch(val) {
+  const results = document.getElementById('search-results');
+  if (!val) {
+    results.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:8px"><div class="cat-pill" onclick="document.getElementById('search-input').value='Biryani';doSearch('Biryani')"><span>🍛</span>Biryani</div><div class="cat-pill" onclick="document.getElementById('search-input').value='Pizza';doSearch('Pizza')"><span>🍕</span>Pizza</div><div class="cat-pill" onclick="document.getElementById('search-input').value='Burger';doSearch('Burger')"><span>🍔</span>Burger</div></div>`;
+    return;
+  }
+  const allItems = Object.values(menuData).flat().filter(i => i.name.toLowerCase().includes(val.toLowerCase()) || i.desc.toLowerCase().includes(val.toLowerCase()));
+  if (allItems.length === 0) {
+    results.innerHTML = `<div class="empty-state"><div class="empty-emoji">🔍</div><div class="empty-title">No results</div><div class="empty-sub">Try a different search term</div></div>`;
+    return;
+  }
+  results.innerHTML = allItems.slice(0,6).map(item => `
+    <div class="v-card" style="padding:12px 0;border-bottom:1px solid var(--border)">
+      <div class="v-card-img">${item.emoji}</div>
+      <div class="v-card-body">
+        <div class="v-card-name">${item.name}</div>
+        <div class="v-card-cuisine" style="font-size:12px">${item.desc.slice(0,50)}...</div>
+        <div class="v-card-meta"><span style="color:var(--accent);font-weight:600">₹${item.price}</span></div>
+      </div>
+    </div>`).join('');
+}
+</script>
+</body>
+</html>
